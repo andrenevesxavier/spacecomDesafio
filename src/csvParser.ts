@@ -5,12 +5,12 @@ const TAM_BUFFER = 16 * 1024 * 1024;
 const TAM_MAX_TS = 64;
 const POT10: number[] = Array.from({ length: 23 }, (_, k) => Number(`1e${k}`));
 
-const PV = 59;       // ;
-const ASPAS = 34;    // "
-const VIRGULA = 44;  // ,
-const PONTO = 46;    // .
-const MENOS = 45;    // -
-const LETRA_T = 116; // t (de "true")
+const PV = 59;       
+const ASPAS = 34;    
+const VIRGULA = 44;  
+const PONTO = 46;    
+const MENOS = 45;    
+const LETRA_T = 116; 
 const NOVA_LINHA = 10;
 
 export class LeitorCsv {
@@ -20,7 +20,7 @@ export class LeitorCsv {
   private temGrupo = false;
   private cabecalho = true;
   private linhas = 0;
-  private pos = 0; // posição em que o último lerDecimal terminou
+  private pos = 0; 
   private vistos = new Set<string>();
 
   // aoFecharGrupo é chamado sincronamente; o Grupo é reaproveitado depois.
@@ -59,7 +59,7 @@ export class LeitorCsv {
   }
 
   private processar(b: Buffer, ini: number, fim: number): void {
-    while (fim > ini && b[fim - 1] <= 32) fim--; // tira \r e espaços
+    while (fim > ini && b[fim - 1] <= 32) fim--;
     while (ini < fim && b[ini] <= 32) ini++;
     if (ini >= fim) return;
     if (this.cabecalho) {
@@ -145,9 +145,6 @@ export class LeitorCsv {
     this.linhas++;
   }
 
-  // Equivale a Number("-30.75944"): mantissa inteira / 10^casas, uma única
-  // divisão correta, então dá exatamente o mesmo double. Qualquer formato
-  // fora do esperado cai no Number() normal.
   private lerDecimal(b: Buffer, p: number, fim: number): number {
     const ini = p;
     let negativo = false;

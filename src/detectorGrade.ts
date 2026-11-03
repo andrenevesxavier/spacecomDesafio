@@ -1,103 +1,3 @@
-
-
-/*import { haversine } from './haversine';
-import { Encontro } from './types';
-import { Grupo } from './grupo';
-import { LIMITE_METROS, ehProtetiva, classificar, montar } from './regras';
-
-const RAIO_TERRA_M = 6_371_000;
-const RAD_PARA_GRAU = 180 / Math.PI;
-const MARGEM = 1.01;             // folga contra erro de arredondamento
-const LARGURA_LINHA = 4_194_304; // 2^22, para montar a chave da célula
-
-// Dois pontos a < 20 m diferem em latitude no máximo isto (em graus).
-const LAT_CELULA_GRAUS = (LIMITE_METROS / RAIO_TERRA_M) * RAD_PARA_GRAU * MARGEM;
-const SEN_METADE_ARCO = Math.sin(LIMITE_METROS / (2 * RAIO_TERRA_M));
-
-// Em longitude o limite depende da latitude; usa a pior latitude do grupo.
-function larguraCelulaLon(latMaxAbsGraus: number): number {
-  const cosMin = Math.cos((latMaxAbsGraus * Math.PI) / 180);
-  const razao = SEN_METADE_ARCO / cosMin;
-  if (!(razao < 1)) return 1e9; // junto do polo: uma coluna só
-  return 2 * Math.asin(razao) * RAD_PARA_GRAU * MARGEM;
-}
-
-// Estruturas reaproveitadas entre os timestamps.
-const celulas = new Map<number, number>(); // chave da célula -> último ponto nela
-let linhas = new Int32Array(1024);
-let colunas = new Int32Array(1024);
-let proximo = new Int32Array(1024);        // lista encadeada de pontos por célula
-
-function garantirCapacidade(n: number): void {
-  if (n <= proximo.length) return;
-  const tam = Math.max(n, proximo.length * 2);
-  linhas = new Int32Array(tam);
-  colunas = new Int32Array(tam);
-  proximo = new Int32Array(tam);
-}
-
-interface Achado { i: number; j: number; d: number; protetiva: boolean }
-
-export function detectarGrupo(g: Grupo, encontros: Encontro[]): void {
-  const n = g.n;
-  if (n < 2) return;
-  garantirCapacidade(n);
-
-  let latMaxAbs = 0;
-  for (let i = 0; i < n; i++) {
-    const l = Math.abs(g.lat[i]);
-    if (l > latMaxAbs) latMaxAbs = l;
-  }
-  const lonCelula = larguraCelulaLon(latMaxAbs);
-
-  // 1. distribui os pontos nas células
-  celulas.clear();
-  for (let i = 0; i < n; i++) {
-    const linha = Math.floor((g.lat[i] + 90) / LAT_CELULA_GRAUS);
-    const coluna = Math.floor((g.lon[i] + 180) / lonCelula);
-    linhas[i] = linha;
-    colunas[i] = coluna;
-
-    const chave = linha * LARGURA_LINHA + coluna;
-    const topo = celulas.get(chave);
-    proximo[i] = topo === undefined ? -1 : topo;
-    celulas.set(chave, i);
-  }
-
-  // 2. para cada ponto, olha a própria célula e as 8 vizinhas
-  let achados: Achado[] | null = null;
-  for (let i = 0; i < n; i++) {
-    for (let dl = -1; dl <= 1; dl++) {
-      for (let dc = -1; dc <= 1; dc++) {
-        const topo = celulas.get((linhas[i] + dl) * LARGURA_LINHA + colunas[i] + dc);
-        if (topo === undefined) continue;
-
-        // a lista vem em ordem decrescente de índice: só interessam j > i
-        for (let j = topo; j > i; j = proximo[j]) {
-          let protetiva = false;
-          if ((g.protetiva[i] | g.protetiva[j]) === 1) {
-            protetiva = ehProtetiva(g, i, j);
-            if (!protetiva) continue;
-          }
-
-          const d = haversine(g.lat[i], g.lon[i], g.lat[j], g.lon[j]);
-          if (d >= LIMITE_METROS) continue;
-
-          if (achados === null) achados = [];
-          achados.push({ i, j, d, protetiva });
-        }
-      }
-    }
-  }
-  if (achados === null) return;
-
-  // 3. mesma ordem de saída da força bruta (por i, depois j)
-  achados.sort((x, y) => x.i - y.i || x.j - y.j);
-  for (const { i, j, d, protetiva } of achados) {
-    encontros.push(montar(g, classificar(g, i, j, protetiva), i, j, d));
-  }
-}*/
-
 import { haversine } from './haversine';
 import { Encontro } from './types';
 import { Grupo } from './grupo';
@@ -107,11 +7,9 @@ const RAIO_TERRA_M = 6_371_000;
 const RAD_PARA_GRAU = 180 / Math.PI;
 const MARGEM = 1.01; // folga contra erro de arredondamento
 
-// Dois pontos a < 20 m diferem em latitude no máximo isto (em graus).
 const LAT_CELULA_GRAUS = (LIMITE_METROS / RAIO_TERRA_M) * RAD_PARA_GRAU * MARGEM;
 const SEN_METADE_ARCO = Math.sin(LIMITE_METROS / (2 * RAIO_TERRA_M));
 
-// Em longitude o limite depende da latitude; usa a pior latitude do grupo.
 function larguraCelulaLon(latMaxAbsGraus: number): number {
   const cosMin = Math.cos((latMaxAbsGraus * Math.PI) / 180);
   const razao = SEN_METADE_ARCO / cosMin;
@@ -147,7 +45,7 @@ function prepararEstruturas(n: number): void {
   }
 
   let cap = 16;
-  while (cap < n * 2) cap <<= 1; // fator de carga <= 0,5
+  while (cap < n * 2) cap <<= 1;
   if (cap > tabGen.length) {
     tabGen = new Int32Array(cap);
     tabLinha = new Int32Array(cap);
@@ -232,7 +130,6 @@ export function detectarGrupo(g: Grupo, encontros: Encontro[]): void {
   }
 
   // 2. cada par de células vizinhas é visitado uma única vez:
-  //    a própria célula (só j > i) e 4 células "à frente".
   achados.length = 0;
   for (let i = 0; i < n; i++) {
     const l = linhas[i];

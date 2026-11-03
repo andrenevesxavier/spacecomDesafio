@@ -13,11 +13,11 @@ export class Grupo {
   timestamp = '';
   n = 0;
   id: Int32Array = new Int32Array(256);
-  faccao: Int32Array = new Int32Array(256); // -1 = sem facção
+  faccao: Int32Array = new Int32Array(256); 
   lat: Float64Array = new Float64Array(256);
   lon: Float64Array = new Float64Array(256);
   protetiva: Uint8Array = new Uint8Array(256);
-  restricoes: (number[] | null)[] = []; // só vítimas têm lista
+  restricoes: (number[] | null)[] = []; 
 
   reiniciar(timestamp: string): void {
     this.timestamp = timestamp;

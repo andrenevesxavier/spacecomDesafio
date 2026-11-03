@@ -7,7 +7,6 @@ export function detectarGrupo(g: Grupo, encontros: Encontro[]): void {
   const n = g.n;
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      // vítima só forma encontro com o agressor vinculado a ela
       let protetiva = false;
       if ((g.protetiva[i] | g.protetiva[j]) === 1) {
         protetiva = ehProtetiva(g, i, j);
