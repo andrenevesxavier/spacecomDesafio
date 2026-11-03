@@ -4,20 +4,21 @@ Solução em **TypeScript (Node.js)** que lê os datasets de geolocalização e 
  
 ## Como executar
  
-Requisitos: Node.js 20 ou superior.
+Requisitos:
  
+- Node.js 20 ou superior.
+- **Os datasets de entrada (`.txt`).** Eles não acompanham este repositório por causa do tamanho (o dataset 7 tem 12 milhões de linhas), então é preciso baixá-los pelos links do desafio e colocá-los em uma pasta à escolha, por exemplo `data/`. Sem eles não há o que processar: o programa recebe o caminho do arquivo como argumento. Os JSONs gerados por esta solução estão em `output/`.
 ```bash
 npm install
 npx tsc
+```
  
-# gera o JSON de um dataset (usa a grade espacial)
+### Comando principal (solução e medição de tempo)
+ 
+Este é o comando que executa a solução. Ele usa a **grade espacial** e é o que deve ser cronometrado e avaliado:
+ 
+```bash
 node dist/index.js <dataset.txt> <saida.json>
- 
-# mesma coisa com a força bruta (referência, bem mais lenta)
-node dist/index.js <dataset.txt> <saida.json> bruta
- 
-# compara dois JSONs (gerado x gabarito, ou grade x força bruta)
-node dist/comparar.js <gerado.json> <referencia.json>
 ```
  
 Exemplo:
@@ -26,7 +27,19 @@ Exemplo:
 node dist/index.js data/dataset3.txt output/saida3.json
 ```
  
-O programa imprime linhas lidas, timestamps, tempo total (leitura + detecção) e a quantidade de encontros.
+Ele imprime linhas lidas, timestamps, **tempo total (leitura + detecção)** e a quantidade de encontros. O tempo medido não inclui a gravação do arquivo JSON. Todos os tempos da seção [Desempenho](#desempenho) vêm deste comando.
+ 
+### Comandos auxiliares (apenas validação)
+ 
+Não fazem parte da solução. Servem para provar que a grade não altera o resultado:
+ 
+```bash
+# mesmo comando com a força bruta (referência de corretude, bem mais lenta)
+node dist/index.js <dataset.txt> <saida.json> bruta
+ 
+# compara dois JSONs (gerado x gabarito, ou grade x força bruta)
+node dist/comparar.js <gerado.json> <referencia.json>
+```
  
 ## Estrutura
  
@@ -63,7 +76,7 @@ O programa imprime linhas lidas, timestamps, tempo total (leitura + detecção) 
 - **Organização.** O comportamento está separado em classes e módulos com uma responsabilidade cada, enquanto os dados do laço crítico ficam em estruturas compactas, que é onde estava o custo.
 ## Desempenho
  
-Tempo total (leitura + detecção) em execução única, Node 24, Windows. Os dois métodos usam o mesmo parser, então a coluna da força bruta isola o efeito da grade.
+Tempo total (leitura + detecção) em execução única, Node 24, Windows. A coluna **Grade espacial** é o tempo do comando principal (`node dist/index.js <dataset.txt> <saida.json>`), ou seja, o da solução entregue. A coluna da força bruta é só referência: usa o mesmo parser, então isola o efeito da grade.
  
 | Dataset | Linhas | Força bruta | Grade espacial | Encontros |
 |---|---|---|---|---|
