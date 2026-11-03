@@ -17,7 +17,6 @@ if (!arquivoGerado || !arquivoGabarito) {
 const ler = (caminho: string): Encontro[] =>
   JSON.parse(readFileSync(caminho, 'utf-8'));
 
-// chave do par: timestamp + IDs ordenados (a ordem dos IDs não importa)
 const chavePar = (e: Encontro): string => {
   const [x, y] = [...e.monitoradosEncontro].sort((a, b) => a - b);
   return `${e.timestamp}|${x},${y}`;
@@ -26,7 +25,6 @@ const chavePar = (e: Encontro): string => {
 const gerado = ler(arquivoGerado);
 const gabarito = ler(arquivoGabarito);
 
-// indexa o gabarito por par; avisa se o próprio arquivo tem par repetido
 const mapaGabarito = new Map<string, Encontro>();
 for (const e of gabarito) mapaGabarito.set(chavePar(e), e);
 
