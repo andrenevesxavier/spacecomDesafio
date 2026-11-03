@@ -1,9 +1,3 @@
 node_modules/
 dist/
 data/
-
-# saídas intermediárias de teste (só na raiz; output/ é versionado)
-/bruta*.json
-/grade*.json
-/novo*.json
-/saida*.json
