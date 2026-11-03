@@ -37,7 +37,7 @@ Não fazem parte da solução. Servem para provar que a grade não altera o resu
 # mesmo comando com a força bruta (referência de corretude, bem mais lenta)
 node dist/index.js <dataset.txt> <saida.json> bruta
  
-# compara dois JSONs (gerado x gabarito, ou grade x força bruta)
+# compara dois JSONs (usado para comparar o resultado da grade com a força bruta)
 node dist/comparar.js <gerado.json> <referencia.json>
 ```
  
