@@ -26,7 +26,8 @@ Exemplo:
 ```bash
 node dist/index.js data/dataset3.txt output/saida3.json
 ```
- 
+Substitua `data/dataset3.txt` pelo caminho (pasta e nome do arquivo) do dataset que você tem na sua máquina, e `output/saida3.json` pelo caminho onde quer gravar o resultado. A pasta de destino precisa existir.
+
 Ele imprime linhas lidas, timestamps, **tempo total (leitura + detecção)** e a quantidade de encontros. O tempo medido não inclui a gravação do arquivo JSON. Todos os tempos da seção [Desempenho](#desempenho) vêm deste comando.
  
 ### Comandos auxiliares (apenas validação)
