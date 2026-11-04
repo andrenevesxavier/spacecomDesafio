@@ -2,18 +2,36 @@
  
 Solução em **TypeScript (Node.js)** que lê os datasets de geolocalização e detecta encontros físicos entre monitorados, entre monitorados da mesma facção e entre agressor e vítima.
  
-## Como executar
+## Como executar (passo a passo)
  
-Requisitos:
+### 1. Pré-requisitos
  
-- Node.js 20 ou superior.
-- **Os datasets de entrada (`.txt`).** Eles não acompanham este repositório por causa do tamanho (o dataset 7 tem 12 milhões de linhas), então é preciso baixá-los pelos links do desafio e colocá-los em uma pasta à escolha, por exemplo `data/`. Sem eles não há o que processar: o programa recebe o caminho do arquivo como argumento. Os JSONs gerados por esta solução estão em `output/`.
+- **Node.js 20 ou superior** (com o `npm`). Para conferir: `node --version`.
+- **Git**
+- **Os datasets de entrada (`.txt`).** Eles não acompanham este repositório por causa do tamanho (o dataset 7 tem 12 milhões de linhas), então é preciso baixá-los pelos links do desafio. Sem eles não há o que processar: o programa recebe o caminho do arquivo como argumento.
+### 2. Obter o projeto
+ 
+Clonando o repositório:
+ 
+```bash
+git clone https://github.com/andrenevesxavier/spacecomDesafio.git
+cd spacecomDesafio
+```
+ 
+### 3. Instalar as dependências e compilar
+ 
 ```bash
 npm install
 npx tsc
 ```
  
-### Comando principal (solução e medição de tempo)
+### 4. Preparar os datasets
+ 
+Crie uma pasta `data` dentro do projeto e coloque nela os arquivos `.txt` baixados (os exemplos abaixo assumem `data/dataset3.txt`). Qualquer outra pasta funciona, desde que o caminho seja informado no comando.
+ 
+A pasta `output/` já vem no repositório com os JSONs gerados por esta solução. Se quiser gravar os resultados em outra pasta, ela precisa existir antes de executar.
+ 
+### 5. Comando principal (solução e medição de tempo)
  
 Este é o comando que executa a solução. Ele usa a **grade espacial** e é o que deve ser cronometrado e avaliado:
  
@@ -26,11 +44,12 @@ Exemplo:
 ```bash
 node dist/index.js data/dataset3.txt output/saida3.json
 ```
-Substitua `data/dataset3.txt` pelo caminho (pasta e nome do arquivo) do dataset que você tem na sua máquina, e `output/saida3.json` pelo caminho onde quer gravar o resultado. A pasta de destino precisa existir.
-
+ 
+Substitua `data/dataset3.txt` pelo caminho (pasta e nome do arquivo) do dataset que você tem na sua máquina, e `output/saida3.json` pelo caminho onde quer gravar o resultado.
+ 
 Ele imprime linhas lidas, timestamps, **tempo total (leitura + detecção)** e a quantidade de encontros. O tempo medido não inclui a gravação do arquivo JSON. Todos os tempos da seção [Desempenho](#desempenho) vêm deste comando.
  
-### Comandos auxiliares (apenas validação)
+### 6. Comandos auxiliares (apenas validação)
  
 Não fazem parte da solução. Servem para provar que a grade não altera o resultado:
  
@@ -38,7 +57,7 @@ Não fazem parte da solução. Servem para provar que a grade não altera o resu
 # mesmo comando com a força bruta (referência de corretude, bem mais lenta)
 node dist/index.js <dataset.txt> <saida.json> bruta
  
-# compara dois JSONs (usado para comparar o resultado da grade com a força bruta)
+# compara dois JSONs (usado para comparar o resultado da grade espacial com a força bruta)
 node dist/comparar.js <gerado.json> <referencia.json>
 ```
  
@@ -58,8 +77,8 @@ node dist/comparar.js <gerado.json> <referencia.json>
 ## Lógica utilizada
  
 1. **Leitura em streaming.** O arquivo é lido em blocos de 16 MB e interpretado direto dos bytes, sem `split` nem uma string por linha. O dataset 7 (12 milhões de linhas) passa de 512 milhões de caracteres, o que inviabiliza `readFileSync` com conversão para string.
-2. **Agrupamento por timestamp.** O desafio só permite comparar posições com timestamp idêntico, então o arquivo é tratado como uma sequência de grupos, um por timestamp. Cada grupo é processado assim que termina e depois descartado, o que mantém o uso de memória baixo. Isso pressupõe o arquivo agrupado por timestamp, como nos datasets fornecidos. Se um timestamp reaparecer depois de outro, o programa interrompe com erro claro em vez de gerar resultado incorreto.
-3. **Grade espacial.** Dentro de um grupo, os pontos são distribuídos em células. O tamanho da célula é calculado a partir do limite de 20 m: em latitude, 20 m correspondem a `20 / 6.371.000` radianos; em longitude, o limite depende de `cos(latitude)`, e usa-se a pior latitude do grupo. Há 1% de folga contra arredondamento. Um ponto só é comparado com os pontos da própria célula e das células vizinhas. Cada par de células vizinhas é visitado uma única vez.
+2. **Agrupamento por timestamp.** O desafio só permite comparar posições com timestamp idêntico, então o arquivo é tratado como uma sequência de grupos, um por timestamp. Cada grupo é processado assim que termina e depois descartado, o que mantém o uso de memória baixo.
+3. **Grade espacial.** Dentro de um grupo, os pontos são distribuídos em células. O tamanho da célula é calculado a partir do limite de 20 m. Um ponto só é comparado com os pontos da própria célula e das células vizinhas. Cada par de células vizinhas é visitado uma única vez.
 4. **Tabela hash própria.** As células ficam em uma tabela hash de endereçamento aberto sobre arrays tipados, reaproveitada entre os timestamps (um contador de geração evita limpá-la). Isso substituiu um `Map` do JavaScript e reduziu cerca de 4x o tempo da detecção.
 5. **Haversine só nos candidatos.** A grade apenas escolhe quais pares vale testar. Quem decide se é encontro é o Haversine com `distância < 20 m` (estritamente menor). Como a célula é sempre maior que o limite, a grade não perde pares; no pior caso traz um candidato a mais, que o Haversine descarta.
 6. **Classificação e unicidade.** Cada par vira no máximo um encontro por timestamp, com IDs ordenados. Quando o par se encaixa em mais de um tipo, vale o mais específico: **protetiva > faccao > generico** (confirmado pelos gabaritos dos datasets de teste, que não repetem o par).
@@ -91,8 +110,6 @@ Tempo total (leitura + detecção) em execução única, Node 24, Windows. A col
  
 Referência do caminho até aqui, no dataset 7: 32,3 s na primeira versão (força bruta com parser simples), 12,3 s com a primeira grade (`Map`) e 2,6 s na versão final.
  
-Onde o tempo do dataset 7 é gasto na versão final: leitura bruta do disco ~120 ms, parsing ~1.550 ms, detecção ~870 ms.
- 
 ## Validação
  
 - Datasets 1 e 2: resultado idêntico ao gabarito (tipo, posições e distância).
@@ -104,4 +121,5 @@ Onde o tempo do dataset 7 é gasto na versão final: leitura bruta do disco ~120
 - A grade não trata o encontro entre pontos em lados opostos do meridiano ±180°. Não afeta os dados do desafio.
 - Cada linha deve caber no buffer de leitura (16 MB) e o timestamp deve ter no máximo 64 caracteres.
 - Se o formato dos números divergir do esperado (mais de 15 dígitos, notação científica), o parser recorre à conversão padrão do JavaScript, mais lenta porém correta.
+ 
  
