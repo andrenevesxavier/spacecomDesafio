@@ -65,6 +65,7 @@ node dist/comparar.js <gerado.json> <referencia.json>
  
 | Arquivo | Responsabilidade |
 |---|---|
+| `output/` | Arquivos JSONs com os resultados de encontros obtidos dos datasets |
 | `src/index.ts` | Orquestra: lê, detecta, grava o JSON e mede o tempo |
 | `src/csvParser.ts` | `LeitorCsv`: lê o arquivo em blocos de bytes e entrega um timestamp por vez |
 | `src/grupo.ts` | `Grupo`: pontos de um timestamp em arrays tipados (reaproveitado) |
